@@ -1,0 +1,1575 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MTG Upgrade Studio</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Inconsolata:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#0a0a0f;--ink2:#14141f;--ink3:#1e1e2e;--ink4:#28283a;--line:#2e2e42;--line2:#3a3a52;--fog:#6b6b8a;--mist:#9494b0;--silver:#c8c8dc;--white:#f0f0f8;--gold:#e8c84a;--gold2:#c8a830;--teal:#3dd6c8;--teal2:#28b0a4;--red:#f05060;--orange:#f08040;--green:#50d090;--proxy:#f09030;--proxy-bg:rgba(240,144,48,.12);--buy-bg:rgba(80,208,144,.10);--r:10px;}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;background:var(--ink);color:var(--white);font-family:'Syne',sans-serif;}
+::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-track{background:var(--ink2);}::-webkit-scrollbar-thumb{background:var(--line2);border-radius:2px;}
+.shell{display:grid;grid-template-columns:260px 1fr;height:100vh;overflow:hidden;}
+.side{background:var(--ink2);border-right:1px solid var(--line);display:flex;flex-direction:column;overflow:hidden;}
+.main{overflow-y:auto;display:flex;flex-direction:column;}
+.side-head{padding:1.25rem 1.25rem .75rem;border-bottom:1px solid var(--line);}
+.wordmark{font-size:11px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);}
+.wordmark span{color:var(--fog);}
+.threshold-row{display:flex;align-items:center;gap:8px;margin-top:.75rem;padding:.5rem .75rem;background:var(--ink3);border-radius:8px;border:1px solid var(--line);}
+.threshold-label{font-size:11px;color:var(--fog);flex:1;}
+.threshold-input{width:60px;padding:3px 7px;background:var(--ink4);border:1px solid var(--line2);border-radius:6px;color:var(--proxy);font-family:'Inconsolata',monospace;font-size:13px;font-weight:600;text-align:right;outline:none;}
+.threshold-input:focus{border-color:var(--proxy);}
+.side-scroll{flex:1;overflow-y:auto;padding:.5rem 0;}
+.side-section{font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--fog);padding:.75rem 1.25rem .3rem;}
+.nav{display:flex;align-items:center;gap:8px;padding:7px 1.25rem;font-size:13px;color:var(--mist);cursor:pointer;transition:.12s;border-left:2px solid transparent;}
+.nav:hover{color:var(--white);background:var(--ink3);}
+.nav.on{color:var(--white);border-left-color:var(--gold);background:var(--ink3);}
+.nav .dot{width:6px;height:6px;border-radius:50%;background:var(--fog);flex-shrink:0;}
+.nav .badge{margin-left:auto;font-size:10px;font-family:'Inconsolata',monospace;background:var(--ink4);border-radius:4px;padding:1px 6px;color:var(--mist);}
+.nav .badge.new{background:rgba(232,200,74,.2);color:var(--gold);}
+.nav .badge.proxy-b{background:rgba(240,144,48,.2);color:var(--proxy);}
+.side-footer{padding:.75rem 1.25rem;border-top:1px solid var(--line);}
+.col-pill{background:var(--ink3);border:1px solid var(--line2);border-radius:6px;padding:6px 10px;font-size:11px;color:var(--mist);cursor:pointer;text-align:center;transition:.12s;}
+.col-pill:hover{border-color:var(--teal);color:var(--teal);}
+.col-pill.loaded{border-color:rgba(61,214,200,.3);color:var(--teal);}
+.panel{display:none;flex:1;}
+.panel.on{display:flex;flex-direction:column;}
+.phase-bar{padding:1.25rem 1.75rem 1rem;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px;flex-shrink:0;}
+.phase-title{font-size:17px;font-weight:700;}
+.phase-sub{font-size:12px;color:var(--fog);margin-top:2px;}
+.phase-actions{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap;}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;font-family:'Syne',sans-serif;font-size:13px;font-weight:600;cursor:pointer;border:1px solid var(--line2);background:var(--ink3);color:var(--white);transition:.12s;}
+.btn:hover{background:var(--ink4);}
+.btn:disabled{opacity:.35;cursor:default;}
+.btn-gold{background:var(--gold);color:var(--ink);border-color:var(--gold2);}
+.btn-gold:hover{background:var(--gold2);}
+.btn-teal{background:rgba(61,214,200,.15);color:var(--teal);border-color:rgba(61,214,200,.3);}
+.btn-teal:hover{background:rgba(61,214,200,.25);}
+.btn-red{background:rgba(240,80,96,.12);color:var(--red);border-color:rgba(240,80,96,.25);}
+.btn-red:hover{background:rgba(240,80,96,.22);}
+.btn-proxy{background:var(--proxy-bg);color:var(--proxy);border-color:rgba(240,144,48,.3);font-size:11px;padding:3px 8px;}
+.btn-proxy:hover{background:rgba(240,144,48,.22);}
+.btn-proxy.active{background:rgba(240,144,48,.3);border-color:var(--proxy);}
+.btn-sm{padding:5px 10px;font-size:12px;}
+.btn-xs{padding:3px 8px;font-size:11px;}
+.steps-row{display:flex;align-items:center;gap:0;padding:.875rem 1.75rem;border-bottom:1px solid var(--line);background:var(--ink2);flex-shrink:0;overflow-x:auto;}
+.step-item{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+.step-num{width:24px;height:24px;border-radius:50%;border:1.5px solid var(--line2);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--fog);font-family:'Inconsolata',monospace;}
+.step-item.done .step-num{background:var(--gold);border-color:var(--gold);color:var(--ink);}
+.step-item.active .step-num{border-color:var(--teal);color:var(--teal);}
+.step-label{font-size:12px;color:var(--fog);white-space:nowrap;}
+.step-item.active .step-label{color:var(--white);}
+.step-item.done .step-label{color:var(--mist);}
+.step-arrow{color:var(--line2);margin:0 10px;font-size:14px;flex-shrink:0;}
+.url-zone{padding:2rem 1.75rem;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.5rem;max-width:640px;margin:0 auto;width:100%;}
+.url-hero{text-align:center;}
+.url-hero h2{font-size:22px;font-weight:700;margin-bottom:.5rem;}
+.url-hero p{font-size:13px;color:var(--fog);line-height:1.6;}
+.url-input-wrap{width:100%;display:flex;gap:8px;}
+.url-input{flex:1;padding:11px 14px;background:var(--ink3);border:1px solid var(--line2);border-radius:9px;color:var(--white);font-family:'Inconsolata',monospace;font-size:13px;outline:none;transition:.12s;}
+.url-input:focus{border-color:var(--teal);}
+.url-input::placeholder{color:var(--fog);}
+.url-examples{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;}
+.url-ex{font-size:11px;background:var(--ink3);border:1px solid var(--line);border-radius:6px;padding:4px 10px;color:var(--fog);cursor:pointer;font-family:'Inconsolata',monospace;transition:.12s;}
+.url-ex:hover{border-color:var(--teal);color:var(--teal);}
+.loading-zone{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem;}
+.spinner{width:36px;height:36px;border:2.5px solid var(--line2);border-top-color:var(--teal);border-radius:50%;animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.loading-msg{font-size:13px;color:var(--fog);font-family:'Inconsolata',monospace;}
+.edit-body{flex:1;overflow-y:auto;padding:1.25rem 1.75rem;display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;}
+.col-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem;}
+.col-title{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;}
+.col-title.cuts{color:var(--red);}
+.col-title.adds{color:var(--teal);}
+.card-list{display:flex;flex-direction:column;gap:4px;}
+.card-row{display:flex;align-items:center;gap:6px;padding:7px 10px;background:var(--ink3);border:1px solid var(--line);border-radius:8px;font-size:13px;transition:.12s;}
+.card-row:hover{border-color:var(--line2);}
+.card-row.removed{opacity:.3;text-decoration:line-through;background:transparent;}
+.card-row.proxy-row{border-color:rgba(240,144,48,.25);background:var(--proxy-bg);}
+.card-row.owned-row{border-color:rgba(61,214,200,.18);background:rgba(61,214,200,.06);}
+.card-name{flex:1;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.card-price{font-family:'Inconsolata',monospace;font-size:12px;color:var(--mist);white-space:nowrap;flex-shrink:0;}
+.card-price.proxy-p{color:var(--proxy);font-weight:600;}
+.rm-btn{width:20px;height:20px;border-radius:4px;border:none;background:transparent;color:var(--fog);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;transition:.12s;flex-shrink:0;}
+.rm-btn:hover{background:rgba(240,80,96,.15);color:var(--red);}
+.badge-sm{font-size:10px;font-weight:700;padding:1px 7px;border-radius:20px;white-space:nowrap;flex-shrink:0;}
+.b-proxy{background:var(--proxy-bg);color:var(--proxy);border:1px solid rgba(240,144,48,.3);}
+.b-owned{background:rgba(61,214,200,.1);color:var(--teal);border:1px solid rgba(61,214,200,.2);}
+.b-need{background:rgba(240,80,96,.1);color:var(--red);border:1px solid rgba(240,80,96,.2);}
+.b-buy{background:var(--buy-bg);color:var(--green);border:1px solid rgba(80,208,144,.2);}
+.sugg-list{margin-top:8px;display:flex;flex-direction:column;gap:3px;max-height:200px;overflow-y:auto;}
+.sugg-item{display:flex;align-items:center;gap:8px;padding:6px 10px;background:var(--ink2);border:1px solid var(--line);border-radius:7px;font-size:12px;cursor:pointer;transition:.12s;}
+.sugg-item:hover{border-color:var(--teal);background:var(--ink3);}
+.sugg-pct{font-size:10px;color:var(--fog);font-family:'Inconsolata',monospace;margin-left:auto;}
+.edit-footer{padding:1rem 1.75rem;border-top:1px solid var(--line);background:var(--ink2);display:flex;align-items:center;gap:12px;flex-shrink:0;}
+.summary-chips{display:flex;gap:8px;flex-wrap:wrap;flex:1;}
+.chip{font-size:12px;font-family:'Inconsolata',monospace;background:var(--ink3);border:1px solid var(--line);border-radius:6px;padding:4px 10px;color:var(--mist);}
+.chip strong{color:var(--white);}
+.chip.proxy-chip{border-color:rgba(240,144,48,.3);color:var(--proxy);}
+.chip.buy-chip{border-color:rgba(80,208,144,.3);color:var(--green);}
+.report-body{flex:1;overflow-y:auto;padding:1.25rem 1.75rem;display:flex;flex-direction:column;gap:1.25rem;}
+.report-section{background:var(--ink2);border:1px solid var(--line);border-radius:12px;overflow:hidden;}
+.report-sec-head{padding:.875rem 1.125rem;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;}
+.report-sec-title{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;}
+.report-sec-title.buy-t{color:var(--green);}
+.report-sec-title.proxy-t{color:var(--proxy);}
+.report-sec-title.col-t{color:var(--teal);}
+.rep-table{width:100%;border-collapse:collapse;font-size:13px;}
+.rep-table th{padding:8px 14px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--fog);background:var(--ink3);border-bottom:1px solid var(--line);}
+.rep-table td{padding:8px 14px;border-bottom:1px solid var(--line);vertical-align:middle;}
+.rep-table tr:last-child td{border-bottom:none;}
+.rep-table tr:hover td{background:var(--ink3);}
+.mono{font-family:'Inconsolata',monospace;}
+.alloc-tag{display:inline-block;font-size:10px;background:var(--ink4);border:1px solid var(--line2);border-radius:4px;padding:1px 7px;color:var(--mist);margin:1px 2px;}
+.qty-badge{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;padding:0 5px;border-radius:11px;font-size:11px;font-weight:700;font-family:'Inconsolata',monospace;background:var(--ink3);border:1px solid var(--line2);color:var(--mist);}
+.qty-badge.need{background:rgba(240,80,96,.1);border-color:rgba(240,80,96,.3);color:var(--red);}
+.qty-badge.ok{background:rgba(61,214,200,.1);border-color:rgba(61,214,200,.3);color:var(--teal);}
+.shop-body{flex:1;overflow-y:auto;padding:1.25rem 1.75rem;}
+.total-bar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:1rem;}
+.total-card{background:var(--ink2);border:1px solid var(--line);border-radius:10px;padding:12px 16px;min-width:130px;}
+.total-label{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--fog);margin-bottom:5px;}
+.total-val{font-size:22px;font-weight:700;font-family:'Inconsolata',monospace;}
+.total-val.buy-v{color:var(--green);}
+.total-val.proxy-v{color:var(--proxy);}
+.total-sub{font-size:11px;color:var(--fog);margin-top:2px;}
+.wants-box{background:var(--ink3);border:1px solid var(--line2);border-radius:10px;padding:12px 14px;font-family:'Inconsolata',monospace;font-size:12px;line-height:2;max-height:220px;overflow-y:auto;white-space:pre;margin-bottom:1rem;color:var(--silver);}
+.wants-box:empty::before{content:'Nenhuma carta ainda...';color:var(--fog);font-style:italic;font-family:'Syne',sans-serif;}
+.col-body{flex:1;overflow-y:auto;padding:1.75rem;}
+.upload-zone{border:1.5px dashed var(--line2);border-radius:12px;padding:2.5rem;text-align:center;cursor:pointer;transition:.2s;color:var(--fog);}
+.upload-zone:hover{border-color:var(--teal);background:rgba(61,214,200,.04);color:var(--teal);}
+/* Proxy page */
+.proxy-body{flex:1;overflow-y:auto;padding:1.25rem 1.75rem;}
+.proxy-toolbar{display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap;align-items:center;}
+.proxy-toolbar input{padding:7px 11px;background:var(--ink3);border:1px solid var(--line2);border-radius:8px;color:var(--white);font-family:'Syne',sans-serif;font-size:13px;outline:none;flex:1;min-width:180px;}
+.proxy-toolbar input:focus{border-color:var(--proxy);}
+.proxy-card-row{display:flex;align-items:center;gap:10px;padding:9px 14px;background:var(--ink2);border:1px solid var(--line);border-radius:9px;font-size:13px;transition:.12s;}
+.proxy-card-row:hover{border-color:var(--line2);}
+.proxy-source{font-size:10px;font-family:'Inconsolata',monospace;padding:1px 7px;border-radius:4px;flex-shrink:0;}
+.src-auto{background:rgba(240,144,48,.12);color:var(--proxy);border:1px solid rgba(240,144,48,.25);}
+.src-manual{background:rgba(61,214,200,.1);color:var(--teal);border:1px solid rgba(61,214,200,.2);}
+/* Modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;display:flex;align-items:center;justify-content:center;padding:1rem;}
+.modal{background:var(--ink2);border:1px solid var(--line2);border-radius:14px;padding:1.5rem;width:100%;max-width:520px;max-height:80vh;overflow-y:auto;}
+.modal h3{font-size:16px;font-weight:700;margin-bottom:.5rem;}
+.modal p{font-size:13px;color:var(--mist);margin-bottom:1rem;line-height:1.6;}
+.modal-cards{display:flex;flex-direction:column;gap:4px;margin-bottom:1.25rem;max-height:260px;overflow-y:auto;}
+.modal-card-item{display:flex;align-items:center;gap:10px;padding:7px 10px;background:var(--ink3);border-radius:7px;font-size:13px;}
+.modal-card-item input[type=checkbox]{width:15px;height:15px;accent-color:var(--proxy);cursor:pointer;flex-shrink:0;}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;}
+.toast{position:fixed;bottom:20px;right:20px;z-index:999;background:var(--ink3);border:1px solid var(--line2);border-radius:10px;padding:11px 18px;font-size:13px;opacity:0;transform:translateY(6px);transition:.2s;pointer-events:none;max-width:320px;}
+.toast.show{opacity:1;transform:translateY(0);}
+.toast.ok{border-color:rgba(80,208,144,.4);color:var(--green);}
+.toast.warn{border-color:rgba(240,144,48,.4);color:var(--proxy);}
+.toast.err{border-color:rgba(240,80,96,.4);color:var(--red);}
+.sep{height:1px;background:var(--line);margin:.75rem 0;}
+.empty-state{text-align:center;padding:3rem 1rem;color:var(--fog);font-size:13px;}
+.tag-deck{font-size:10px;font-family:'Inconsolata',monospace;background:var(--ink4);border-radius:4px;padding:1px 6px;color:var(--fog);}
+</style>
+</head>
+<body>
+<div class="shell">
+<aside class="side">
+  <div class="side-head">
+    <div class="wordmark">MTG <span>///</span> Upgrade Studio</div>
+    <div class="threshold-row">
+      <span class="threshold-label">🖨️ Proxy acima de</span>
+      <input class="threshold-input" id="threshold-input" type="number" min="1" max="100" step="0.5" value="5" onchange="onThresholdChange()">
+      <span style="font-size:12px;color:var(--fog)">€</span>
+    </div>
+  </div>
+
+    <div id="sync-indicator" style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--fog);margin-top:.5rem;padding:.4rem .75rem;background:var(--ink3);border-radius:6px;border:1px solid var(--line)">
+      <span>☁️</span><span>Cloud</span>
+    </div>
+  <div class="side-scroll">
+    <div class="side-section">Workflow</div>
+    <div class="nav on" id="nav-import" onclick="go('import')"><span class="dot" style="background:var(--teal)"></span>Novo Upgrade</div>
+    <div class="side-section">Lista de Compras</div>
+    <div class="nav" id="nav-shop" onclick="go('shop')"><span class="dot" style="background:var(--gold)"></span>Lista Acumulada<span class="badge" id="shop-badge">0</span></div>
+    <div class="nav" id="nav-report" onclick="go('report')"><span class="dot" style="background:var(--green)"></span>Relatório Final</div>
+    <div class="side-section">Gestão</div>
+    <div class="nav" id="nav-proxies" onclick="go('proxies')"><span class="dot" style="background:var(--proxy)"></span>Lista de Proxies<span class="badge proxy-b" id="proxy-badge">0</span></div>
+    <div class="nav" id="nav-settings" onclick="go('settings')"><span class="dot" style="background:var(--line2)"></span>Configurações</div>
+    <div class="nav" id="nav-col" onclick="go('col')"><span class="dot" style="background:var(--mist)"></span>Minha Coleção</div>
+  </div>
+  <div class="side-footer">
+    <div class="col-pill" id="col-pill" onclick="go('col')">📦 Sem coleção importada</div>
+  </div>
+</aside>
+
+<main class="main">
+
+<!-- IMPORT -->
+<div class="panel on" id="panel-import">
+  <div class="phase-bar">
+    <div><div class="phase-title">Novo Upgrade de Precon</div><div class="phase-sub">Cola o link EDHREC do precon para começar</div></div>
+  </div>
+  <div class="steps-row">
+    <div class="step-item active"><div class="step-num">1</div><div class="step-label">Link EDHREC</div></div>
+    <div class="step-arrow">›</div>
+    <div class="step-item"><div class="step-num">2</div><div class="step-label">Editar Cuts & Adds</div></div>
+    <div class="step-arrow">›</div>
+    <div class="step-item"><div class="step-num">3</div><div class="step-label">Confirmar & Commit</div></div>
+  </div>
+  <div class="url-zone" id="step-url">
+    <div class="url-hero">
+      <h2>Qual precon queres fazer upgrade?</h2>
+      <p>Cola o link da página de precon do EDHREC.<br>A app extrai as recomendações de cuts e adds automaticamente.</p>
+    </div>
+    <div class="url-input-wrap">
+      <input class="url-input" id="url-in" placeholder="https://edhrec.com/precon/world-shaper" onkeydown="if(event.key==='Enter')loadEDHREC()">
+      <button class="btn btn-teal" onclick="loadEDHREC()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        Analisar
+      </button>
+    </div>
+    <div>
+      <div style="font-size:11px;color:var(--fog);text-align:center;margin-bottom:8px">Exemplos</div>
+      <div class="url-examples">
+        <span class="url-ex" onclick="fillEx(this)">edhrec.com/precon/world-shaper</span>
+        <span class="url-ex" onclick="fillEx(this)">edhrec.com/precon/counter-blitz</span>
+        <span class="url-ex" onclick="fillEx(this)">edhrec.com/precon/limit-break</span>
+        <span class="url-ex" onclick="fillEx(this)">edhrec.com/precon/ahoy-mateys</span>
+        <span class="url-ex" onclick="fillEx(this)">edhrec.com/precon/eldrazi-incursion</span>
+      </div>
+    </div>
+  </div>
+  <div class="loading-zone" id="step-loading" style="display:none">
+    <div class="spinner"></div>
+    <div class="loading-msg" id="loading-msg">A ler página EDHREC...</div>
+  </div>
+</div>
+
+<!-- EDIT -->
+<div class="panel" id="panel-edit">
+  <div class="phase-bar">
+    <div><div class="phase-title" id="edit-title">Editar Upgrades</div><div class="phase-sub" id="edit-sub"></div></div>
+    <div class="phase-actions">
+      <button class="btn btn-sm" onclick="go('import')">← Voltar</button>
+      <button class="btn btn-gold btn-sm" onclick="showCommit()">Commit →</button>
+    </div>
+  </div>
+  <div class="steps-row">
+    <div class="step-item done"><div class="step-num">✓</div><div class="step-label">Link EDHREC</div></div>
+    <div class="step-arrow">›</div>
+    <div class="step-item active"><div class="step-num">2</div><div class="step-label">Editar Cuts & Adds</div></div>
+    <div class="step-arrow">›</div>
+    <div class="step-item"><div class="step-num">3</div><div class="step-label">Confirmar & Commit</div></div>
+  </div>
+  <div class="edit-body" id="edit-body"></div>
+  <div class="edit-footer">
+    <div class="summary-chips" id="edit-summary"></div>
+    <button class="btn btn-gold" onclick="showCommit()">Commit →</button>
+  </div>
+</div>
+
+<!-- COMMIT -->
+<div class="panel" id="panel-commit">
+  <div class="phase-bar">
+    <div><div class="phase-title">Confirmar & Commit</div><div class="phase-sub">Revê antes de guardar</div></div>
+    <div class="phase-actions"><button class="btn btn-sm" onclick="go('edit')">← Editar</button></div>
+  </div>
+  <div class="steps-row">
+    <div class="step-item done"><div class="step-num">✓</div><div class="step-label">Link EDHREC</div></div>
+    <div class="step-arrow">›</div>
+    <div class="step-item done"><div class="step-num">✓</div><div class="step-label">Editar Cuts & Adds</div></div>
+    <div class="step-arrow">›</div>
+    <div class="step-item active"><div class="step-num">3</div><div class="step-label">Confirmar & Commit</div></div>
+  </div>
+  <div class="report-body" id="commit-body"></div>
+</div>
+
+
+<!-- SETUP -->
+<div class="panel" id="panel-setup">
+  <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:2rem;">
+    <div style="max-width:520px;width:100%;">
+      <div style="text-align:center;margin-bottom:2rem;">
+        <div style="font-size:28px;font-weight:800;color:var(--gold);letter-spacing:.04em;margin-bottom:.5rem">MTG Upgrade Studio</div>
+        <div style="font-size:14px;color:var(--fog)">Configura a tua ligação ao Supabase para começar</div>
+      </div>
+      <div style="background:var(--ink2);border:1px solid var(--line);border-radius:14px;padding:1.75rem;display:flex;flex-direction:column;gap:1.25rem;">
+        <div>
+          <div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--fog);margin-bottom:8px">Project URL</div>
+          <input id="setup-url" type="text" placeholder="https://xxxxxxxxxxx.supabase.co"
+            style="width:100%;padding:10px 13px;background:var(--ink3);border:1px solid var(--line2);border-radius:9px;color:var(--white);font-family:'Inconsolata',monospace;font-size:13px;outline:none;"
+            onfocus="this.style.borderColor='var(--teal)'" onblur="this.style.borderColor='var(--line2)'">
+        </div>
+        <div>
+          <div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--fog);margin-bottom:8px">Anon Key</div>
+          <input id="setup-key" type="password" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+            style="width:100%;padding:10px 13px;background:var(--ink3);border:1px solid var(--line2);border-radius:9px;color:var(--white);font-family:'Inconsolata',monospace;font-size:13px;outline:none;"
+            onfocus="this.style.borderColor='var(--teal)'" onblur="this.style.borderColor='var(--line2)'">
+        </div>
+        <div>
+          <div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--fog);margin-bottom:8px">Anthropic API Key</div>
+          <input id="setup-anthropic" type="password" placeholder="sk-ant-api03-..."
+            style="width:100%;padding:10px 13px;background:var(--ink3);border:1px solid var(--line2);border-radius:9px;color:var(--white);font-family:'Inconsolata',monospace;font-size:13px;outline:none;"
+            onfocus="this.style.borderColor='var(--proxy)'" onblur="this.style.borderColor='var(--line2)'">
+          <div style="font-size:11px;color:var(--fog);margin-top:5px">Obtém em <a href="https://console.anthropic.com" target="_blank" style="color:var(--teal)">console.anthropic.com</a> → Gerenciar → API Keys</div>
+        </div>
+        <button class="btn btn-gold" style="width:100%;justify-content:center;padding:11px;" onclick="saveSupabaseConfig()">
+          Ligar e começar →
+        </button>
+        <div style="border-top:1px solid var(--line);padding-top:1rem;">
+          <div style="font-size:12px;color:var(--fog);line-height:1.8;">
+            <strong style="color:var(--mist)">Ainda não tens conta Supabase?</strong><br>
+            1. Vai a <a href="https://supabase.com" target="_blank" style="color:var(--teal)">supabase.com</a> → cria conta gratuita<br>
+            2. Cria projecto → região <strong style="color:var(--mist)">West EU (Ireland)</strong><br>
+            3. SQL Editor → executa o script de setup (ver guia)<br>
+            4. Project Settings → API → copia URL e anon key
+          </div>
+          <button class="btn btn-sm btn-teal" style="margin-top:.75rem" onclick="downloadSetupGuide()">📄 Descarregar guia de setup</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SHOP -->
+<div class="panel" id="panel-shop">
+  <div class="phase-bar">
+    <div><div class="phase-title">Lista de Compras Acumulada</div><div class="phase-sub">Todos os upgrades committed</div></div>
+    <div class="phase-actions">
+      <button class="btn btn-sm btn-teal" onclick="copyWants()">📋 Copiar Wants List</button>
+      <button class="btn btn-sm" onclick="downloadWants()">.txt</button>
+      <button class="btn btn-sm" onclick="exportJSON()">💾 JSON</button>
+      <label class="btn btn-sm" style="cursor:pointer">📂 Importar<input type="file" accept=".json" style="display:none" onchange="importJSON(event)"></label>
+    </div>
+  </div>
+  <div class="shop-body" id="shop-body"></div>
+</div>
+
+<!-- REPORT -->
+<div class="panel" id="panel-report">
+  <div class="phase-bar">
+    <div><div class="phase-title">Relatório Final</div><div class="phase-sub">Compras + Proxies com alocações</div></div>
+    <div class="phase-actions">
+      <button class="btn btn-sm btn-teal" onclick="copyWants()">📋 Cardmarket</button>
+      <button class="btn btn-sm btn-gold" onclick="window.print()">🖨️ Imprimir</button>
+    </div>
+  </div>
+  <div class="report-body" id="report-body"></div>
+</div>
+
+<!-- PROXIES PAGE -->
+<div class="panel" id="panel-proxies">
+  <div class="phase-bar">
+    <div><div class="phase-title">Lista de Proxies</div><div class="phase-sub">Verdade absoluta — o sistema consulta esta lista para cada carta</div></div>
+    <div class="phase-actions">
+      <button class="btn btn-sm btn-proxy" onclick="addProxyManual()">+ Adicionar manual</button>
+      <button class="btn btn-sm" onclick="exportProxiesCSV()">⬇ CSV proxies</button>
+    </div>
+  </div>
+  <div class="proxy-body" id="proxy-body"></div>
+</div>
+
+<!-- COLLECTION -->
+<div class="panel" id="panel-col">
+  <div class="phase-bar">
+    <div><div class="phase-title">Minha Coleção</div><div class="phase-sub">Importa o CSV do Manabox ou Deckbox</div></div>
+    <div class="phase-actions">
+      <button class="btn btn-sm btn-red" onclick="clearCollection()" id="clear-col-btn" style="display:none">Limpar</button>
+    </div>
+  </div>
+  <div class="col-body" id="col-body"></div>
+</div>
+
+
+<!-- SETTINGS -->
+<div class="panel" id="panel-settings">
+  <div class="phase-bar">
+    <div><div class="phase-title">Configurações</div><div class="phase-sub">Supabase e preferências</div></div>
+  </div>
+  <div style="padding:1.75rem;max-width:540px;">
+    <div style="font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--fog);margin-bottom:.75rem">Ligação Supabase</div>
+    <div style="background:var(--ink2);border:1px solid var(--line);border-radius:12px;padding:1.25rem;display:flex;flex-direction:column;gap:1rem;margin-bottom:1.25rem;">
+      <div>
+        <div style="font-size:11px;color:var(--fog);margin-bottom:6px;font-weight:600;text-transform:uppercase;letter-spacing:.06em">Project URL</div>
+        <input id="cfg-url" type="text" style="width:100%;padding:9px 12px;background:var(--ink3);border:1px solid var(--line2);border-radius:8px;color:var(--white);font-family:'Inconsolata',monospace;font-size:12px;outline:none;">
+      </div>
+      <div>
+        <div style="font-size:11px;color:var(--fog);margin-bottom:6px;font-weight:600;text-transform:uppercase;letter-spacing:.06em">Anon Key</div>
+        <input id="cfg-key" type="password" style="width:100%;padding:9px 12px;background:var(--ink3);border:1px solid var(--line2);border-radius:8px;color:var(--white);font-family:'Inconsolata',monospace;font-size:12px;outline:none;">
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-teal btn-sm" onclick="saveSupabaseConfig(true)">Guardar e testar</button>
+        <button class="btn btn-sm btn-red" onclick="clearSupabaseConfig()">Desligar</button>
+      </div>
+      <div id="cfg-status" style="font-size:12px;color:var(--fog)"></div>
+    </div>
+    <div style="font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--fog);margin-bottom:.75rem;margin-top:1.25rem">Anthropic API</div>
+    <div style="background:var(--ink2);border:1px solid var(--line);border-radius:12px;padding:1.25rem;display:flex;flex-direction:column;gap:1rem;margin-bottom:1.25rem;">
+      <div>
+        <div style="font-size:11px;color:var(--fog);margin-bottom:6px;font-weight:600;text-transform:uppercase;letter-spacing:.06em">API Key</div>
+        <input id="cfg-anthropic" type="password" placeholder="sk-ant-api03-..."
+          style="width:100%;padding:9px 12px;background:var(--ink3);border:1px solid var(--line2);border-radius:8px;color:var(--white);font-family:'Inconsolata',monospace;font-size:12px;outline:none;">
+        <div style="font-size:11px;color:var(--fog);margin-top:6px">Obtém em <a href="https://console.anthropic.com" target="_blank" style="color:var(--teal)">console.anthropic.com</a> → Gerenciar → API Keys</div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-teal btn-sm" onclick="saveAnthropicKey()">Guardar key</button>
+        <button class="btn btn-sm btn-red" onclick="clearAnthropicKey()">Remover</button>
+      </div>
+      <div id="anthropic-status" style="font-size:12px;color:var(--fog)"></div>
+    </div>
+    <div style="font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--fog);margin-bottom:.75rem">Dados</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <button class="btn btn-sm" onclick="exportJSON()">💾 Exportar JSON completo</button>
+      <label class="btn btn-sm" style="cursor:pointer">📂 Importar JSON<input type="file" accept=".json" style="display:none" onchange="importJSON(event)"></label>
+      <button class="btn btn-sm btn-teal" onclick="downloadSetupGuide()">📄 Guia de setup</button>
+    </div>
+  </div>
+</div>
+
+</main>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal-overlay" style="display:none" onclick="if(event.target===this)closeModal()">
+  <div class="modal" id="modal-content"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ════════════════════════════════════════════════════════
+// STATE
+// ════════════════════════════════════════════════════════
+let PROXY_EUR = 5;
+
+// proxyList: Map<cardName, {source:'auto'|'manual', price:number, note?:string}>
+let proxyList = new Map();
+
+// collection: Map<cardName, {total:number, available:number}>
+let collection = new Map();
+
+// shopList: committed deck upgrades
+let shopList = [];
+
+// wip: current upgrade session
+let wip = null;
+
+function loadState() {
+  try {
+    const t = localStorage.getItem('mtg_threshold');
+    if (t) { PROXY_EUR = parseFloat(t); document.getElementById('threshold-input').value = PROXY_EUR; }
+    const p = localStorage.getItem('mtg_proxies');
+    if (p) proxyList = new Map(JSON.parse(p));
+    const c = localStorage.getItem('mtg_col');
+    if (c) collection = new Map(JSON.parse(c));
+    const s = localStorage.getItem('mtg_shop');
+    if (s) shopList = JSON.parse(s);
+  } catch(e) {}
+}
+
+// saveState defined in Supabase block below
+
+// ════════════════════════════════════════════════════════
+// PROXY DECISION ENGINE
+// isProxy(name, price) → true/false
+// ════════════════════════════════════════════════════════
+function isProxy(name, price) {
+  if (proxyList.has(name)) return true;
+  return (price || 0) > PROXY_EUR;
+}
+
+// Returns enriched add card object
+function enrichAdd(name, price) {
+  price = price || 0;
+  const proxy = isProxy(name, price);
+  const col = collection.get(name) || { total: 0, available: 0 };
+  // Count allocated copies in committed decks
+  let allocatedIn = [];
+  for (const deck of shopList) {
+    if (deck.adds.find(a => a.name === name && !a.removed)) allocatedIn.push(deck.deckName);
+  }
+  const available = Math.max(0, col.available - allocatedIn.length);
+  return { name, price, removed: false, isProxy: proxy, colTotal: col.total, available, allocatedIn };
+}
+
+function onThresholdChange() {
+  const v = parseFloat(document.getElementById('threshold-input').value);
+  if (!isNaN(v) && v > 0) { PROXY_EUR = v; saveState(); if (wip) renderEdit(); }
+}
+
+// ════════════════════════════════════════════════════════
+// NAVIGATION
+// ════════════════════════════════════════════════════════
+function go(id) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('on'));
+  document.querySelectorAll('.nav').forEach(n => n.classList.remove('on'));
+  document.getElementById('panel-' + id).classList.add('on');
+  const nav = document.getElementById('nav-' + id);
+  if (nav) nav.classList.add('on');
+  if (id === 'shop') renderShop();
+  else if (id === 'report') renderReport();
+  else if (id === 'col') renderCollection();
+  else if (id === 'proxies') renderProxies();
+  else if (id === 'edit' && wip) renderEdit();
+  else if (id === 'settings') renderSettings();
+}
+
+// ════════════════════════════════════════════════════════
+// EDHREC LOADER
+// ════════════════════════════════════════════════════════
+function fillEx(el) {
+  const t = el.textContent.trim();
+  document.getElementById('url-in').value = t.startsWith('http') ? t : 'https://' + t;
+}
+
+async function loadEDHREC() {
+  const raw = document.getElementById('url-in').value.trim();
+  if (!raw) { toast('Cola um link do EDHREC primeiro', 'warn'); return; }
+  let url = raw;
+  if (!url.startsWith('http')) url = 'https://' + url;
+  if (!url.includes('edhrec.com')) { toast('Usa um link do edhrec.com', 'warn'); return; }
+
+  document.getElementById('step-url').style.display = 'none';
+  document.getElementById('step-loading').style.display = 'flex';
+  setLoadMsg('A ligar ao EDHREC...');
+
+  try {
+    const slug = url.split('/').filter(Boolean).pop();
+    setLoadMsg('A analisar precon via Claude...');
+
+    const prompt = `You are a Magic: The Gathering expert. For the Commander precon with EDHREC slug "${slug}" (URL: ${url}), provide upgrade data.
+
+Rules:
+- Do NOT include cards already in the precon as upgrade suggestions
+- Prices are approximate Cardmarket EUR for English Excellent condition from PT/ES/DE sellers
+- Include 12-15 cuts and 12-15 adds
+- Include 10 extra suggestions beyond the main adds
+
+Respond ONLY with this exact JSON structure, no markdown:
+{"deckName":"","commander":"","set":"","cuts":["card1"],"cutLands":["land1"],"adds":[{"name":"","price":0.0}],"suggestions":[{"name":"","price":0.0,"pct":0}]}`;
+
+    if (!ANTHROPIC_KEY) {
+      document.getElementById('step-url').style.display = '';
+      document.getElementById('step-loading').style.display = 'none';
+      toast('Insere a tua Anthropic API key nas Configurações primeiro', 'warn');
+      go('settings');
+      return;
+    }
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': ANTHROPIC_KEY, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+      body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 1200, messages: [{ role: 'user', content: prompt }] })
+    });
+    if (!resp.ok) throw new Error('API error ' + resp.status);
+    const data = await resp.json();
+    const text = data.content.map(b => b.text || '').join('');
+    const parsed = JSON.parse(text.replace(/```json|```/g, '').trim());
+
+    setLoadMsg('A calcular proxies e coleção...');
+    await new Promise(r => setTimeout(r, 300));
+
+    // Identify new proxies to confirm
+    const newProxies = (parsed.adds || [])
+      .filter(c => !proxyList.has(c.name) && (c.price || 0) > PROXY_EUR)
+      .map(c => ({ name: c.name, price: c.price }));
+
+    wip = {
+      deckId: slug + '_' + Date.now(),
+      deckName: parsed.deckName || slug.split('-').map(w => w[0].toUpperCase() + w.slice(1)).join(' '),
+      commander: parsed.commander || '',
+      set: parsed.set || '',
+      url,
+      cuts: [...(parsed.cuts || []).map(n => ({ name: n, isLand: false, removed: false })),
+             ...(parsed.cutLands || []).map(n => ({ name: n, isLand: true, removed: false }))],
+      adds: (parsed.adds || []).map(c => enrichAdd(c.name, c.price)),
+      suggestions: (parsed.suggestions || []).map(c => ({ name: c.name, price: c.price || 0, pct: c.pct || 0 }))
+    };
+
+    document.getElementById('step-url').style.display = '';
+    document.getElementById('step-loading').style.display = 'none';
+    document.getElementById('edit-title').textContent = wip.deckName + ' — Upgrades';
+    document.getElementById('edit-sub').textContent = (wip.commander ? wip.commander + ' · ' : '') + (wip.set || '');
+
+    if (newProxies.length) {
+      showProxyConfirmModal(newProxies, () => go('edit'));
+    } else {
+      go('edit');
+    }
+
+  } catch(err) {
+    document.getElementById('step-url').style.display = '';
+    document.getElementById('step-loading').style.display = 'none';
+    toast('Erro: ' + err.message, 'err');
+    console.error(err);
+  }
+}
+
+function setLoadMsg(m) { document.getElementById('loading-msg').textContent = m; }
+
+// ════════════════════════════════════════════════════════
+// PROXY CONFIRM MODAL
+// ════════════════════════════════════════════════════════
+function showProxyConfirmModal(cards, onDone) {
+  const checkboxes = cards.map((c, i) =>
+    `<div class="modal-card-item">
+      <input type="checkbox" id="pconf-${i}" checked>
+      <span style="flex:1">${c.name}</span>
+      <span class="mono" style="color:var(--proxy);font-size:12px">€${c.price.toFixed(2)}</span>
+      <span class="badge-sm b-proxy">PROXY</span>
+    </div>`).join('');
+
+  document.getElementById('modal-content').innerHTML = `
+    <h3>🖨️ Adicionar à lista de Proxies?</h3>
+    <p>As seguintes cartas têm preço > €${PROXY_EUR} e serão tratadas como proxy. Confirma quais deves adicionar à tua lista de proxies:</p>
+    <div class="modal-cards">${checkboxes}</div>
+    <div class="modal-actions">
+      <button class="btn btn-sm" onclick="closeModal();${onDone ? '(' + onDone.toString() + ')()' : ''}">Saltar</button>
+      <button class="btn btn-sm btn-proxy" onclick="confirmProxies(${JSON.stringify(cards)}, ${onDone ? onDone.toString() : 'null'})">Confirmar selecionadas</button>
+    </div>`;
+  document.getElementById('modal-overlay').style.display = 'flex';
+}
+
+function confirmProxies(cards, onDone) {
+  cards.forEach((c, i) => {
+    const cb = document.getElementById('pconf-' + i);
+    if (cb && cb.checked) {
+      proxyList.set(c.name, { source: 'auto', price: c.price });
+    }
+  });
+  saveState();
+  updateProxyBadge();
+  closeModal();
+  toast(`Lista de proxies atualizada!`, 'ok');
+  if (typeof onDone === 'function') onDone();
+  else go('edit');
+}
+
+function closeModal() { document.getElementById('modal-overlay').style.display = 'none'; }
+
+// ════════════════════════════════════════════════════════
+// EDIT PANEL
+// ════════════════════════════════════════════════════════
+function renderEdit() {
+  if (!wip) return;
+  const body = document.getElementById('edit-body');
+  const cutsActive = wip.cuts.filter(c => !c.removed);
+  const addsActive = wip.adds.filter(a => !a.removed);
+
+  body.innerHTML = `
+    <div>
+      <div class="col-head">
+        <span class="col-title cuts">✂ Cortar (${cutsActive.length})</span>
+        <button class="btn btn-xs" onclick="addCutManual()">+ Adicionar</button>
+      </div>
+      <div class="card-list">
+        ${wip.cuts.map((c, i) => `
+          <div class="card-row ${c.removed ? 'removed' : ''}">
+            <span style="font-size:9px;color:var(--${c.isLand ? 'gold' : 'fog'});width:28px;flex-shrink:0">${c.isLand ? 'LAND' : 'CARD'}</span>
+            <span class="card-name">${c.name}</span>
+            <button class="rm-btn" onclick="toggleCut(${i})">${c.removed ? '↩' : '×'}</button>
+          </div>`).join('')}
+      </div>
+    </div>
+    <div>
+      <div class="col-head">
+        <span class="col-title adds">＋ Adicionar (${addsActive.length})</span>
+        <button class="btn btn-xs" onclick="addCardManual()">+ Adicionar</button>
+      </div>
+      <div class="card-list">
+        ${wip.adds.map((a, i) => addRow(a, i)).join('')}
+      </div>
+      ${wip.suggestions.length ? `
+        <div class="sep"></div>
+        <div style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--fog);margin-bottom:6px">Sugestões EDHREC</div>
+        <div class="sugg-list">
+          ${wip.suggestions.map((s, i) => `
+            <div class="sugg-item" onclick="addSuggestion(${i})">
+              <span style="flex:1">${s.name}</span>
+              <span class="mono" style="font-size:11px;color:var(--${isProxy(s.name,s.price)?'proxy':'mist'})">€${s.price.toFixed(2)}</span>
+              ${s.pct ? `<span class="sugg-pct">${s.pct}%</span>` : ''}
+              <span style="color:var(--teal);font-size:15px">＋</span>
+            </div>`).join('')}
+        </div>` : ''}
+    </div>`;
+
+  updateEditSummary();
+}
+
+function addRow(a, i) {
+  const proxy = a.isProxy;
+  const hasCopy = !proxy && a.available > 0;
+  const rowClass = a.removed ? 'removed' : proxy ? 'proxy-row' : hasCopy ? 'owned-row' : '';
+  const priceClass = proxy ? 'proxy-p' : '';
+  const allocHtml = a.allocatedIn.length
+    ? `<span style="font-size:10px;color:var(--fog);margin-left:2px">${a.allocatedIn.map(d => `<span class="alloc-tag">${d}</span>`).join('')}</span>` : '';
+  const badge = getBadge(a);
+  const isInProxyList = proxyList.has(a.name);
+
+  return `<div class="card-row ${rowClass}" id="add-${i}">
+    <span class="card-name">${a.name} ${allocHtml}</span>
+    <span class="card-price ${priceClass}">€${a.price.toFixed(2)}</span>
+    ${badge}
+    <button class="btn-proxy btn ${isInProxyList ? 'active' : ''}" title="${isInProxyList ? 'Remover dos proxies' : 'Marcar como proxy'}" onclick="toggleProxyQuick(${i})" style="padding:2px 7px;font-size:10px">${isInProxyList ? '🖨️' : '🖨?'}</button>
+    <button class="rm-btn" onclick="toggleAdd(${i})">${a.removed ? '↩' : '×'}</button>
+  </div>`;
+}
+
+function getBadge(a) {
+  if (a.isProxy && a.available > 0) return `<span class="badge-sm b-proxy">PROXY</span><span class="badge-sm b-owned" style="margin-left:3px">✓${a.colTotal}×</span>`;
+  if (a.isProxy) return `<span class="badge-sm b-proxy">PROXY</span><span class="badge-sm b-need" style="margin-left:3px">adquirir</span>`;
+  if (a.available > 0) return `<span class="badge-sm b-owned">✓ ${a.available} disp.</span>`;
+  return `<span class="badge-sm b-buy">comprar</span>`;
+}
+
+function toggleCut(i) { wip.cuts[i].removed = !wip.cuts[i].removed; renderEdit(); }
+function toggleAdd(i) { wip.adds[i].removed = !wip.adds[i].removed; renderEdit(); }
+
+function toggleProxyQuick(i) {
+  const a = wip.adds[i];
+  if (proxyList.has(a.name)) {
+    // Remove from proxy list
+    proxyList.delete(a.name);
+    a.isProxy = a.price > PROXY_EUR; // revert to threshold rule
+    toast(`${a.name} removida dos proxies`, 'warn');
+  } else {
+    // Add to proxy list with confirmation
+    showProxyConfirmModal([{ name: a.name, price: a.price }], () => {
+      wip.adds[i].isProxy = true;
+      renderEdit();
+    });
+    return;
+  }
+  saveState(); updateProxyBadge();
+  // Re-enrich
+  wip.adds[i] = enrichAdd(a.name, a.price);
+  renderEdit();
+}
+
+function addSuggestion(i) {
+  const s = wip.suggestions[i];
+  const newProxies = (!proxyList.has(s.name) && s.price > PROXY_EUR) ? [{ name: s.name, price: s.price }] : [];
+  wip.adds.push(enrichAdd(s.name, s.price));
+  wip.suggestions.splice(i, 1);
+  if (newProxies.length) {
+    showProxyConfirmModal(newProxies, () => renderEdit());
+  } else {
+    renderEdit();
+  }
+  toast(`${s.name} adicionada!`, 'ok');
+}
+
+function addCutManual() {
+  const n = prompt('Nome da carta a cortar:'); if (!n?.trim()) return;
+  wip.cuts.push({ name: n.trim(), isLand: false, removed: false }); renderEdit();
+}
+
+function addCardManual() {
+  const n = prompt('Nome da carta a adicionar:'); if (!n?.trim()) return;
+  const ps = prompt(`Preço EN/EX (€) para ${n}:`, '0');
+  const p = parseFloat(ps) || 0;
+  const enriched = enrichAdd(n.trim(), p);
+  wip.adds.push(enriched);
+  const newProxies = (!proxyList.has(n) && p > PROXY_EUR) ? [{ name: n, price: p }] : [];
+  if (newProxies.length) showProxyConfirmModal(newProxies, () => renderEdit());
+  else renderEdit();
+}
+
+function updateEditSummary() {
+  if (!wip) return;
+  const active = wip.adds.filter(a => !a.removed);
+  const toBuy = active.filter(a => !a.isProxy && a.available === 0);
+  const fromCol = active.filter(a => !a.isProxy && a.available > 0);
+  const proxyTotal = active.filter(a => a.isProxy);
+  const buyEur = toBuy.reduce((s, a) => s + a.price, 0);
+  document.getElementById('edit-summary').innerHTML = `
+    <span class="chip buy-chip"><strong>€${buyEur.toFixed(2)}</strong> a comprar</span>
+    <span class="chip buy-chip"><strong>${toBuy.length}</strong> cartas</span>
+    <span class="chip proxy-chip"><strong>${proxyTotal.length}</strong> proxy</span>
+    <span class="chip"><strong>${fromCol.length}</strong> da coleção</span>`;
+}
+
+// ════════════════════════════════════════════════════════
+// COMMIT
+// ════════════════════════════════════════════════════════
+function showCommit() {
+  if (!wip) return;
+  go('commit');
+  renderCommitPreview();
+}
+
+function renderCommitPreview() {
+  const active = wip.adds.filter(a => !a.removed);
+  const toBuy   = active.filter(a => !a.isProxy && a.available === 0);
+  const fromCol = active.filter(a => !a.isProxy && a.available > 0);
+  const proxyNeed  = active.filter(a => a.isProxy && a.colTotal === 0);
+  const proxyOwned = active.filter(a => a.isProxy && a.colTotal > 0);
+  const cutsActive = wip.cuts.filter(c => !c.removed);
+  const buyEur = toBuy.reduce((s, a) => s + a.price, 0);
+
+  document.getElementById('commit-body').innerHTML = `
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:1rem">
+      <div class="total-card"><div class="total-label">A Comprar</div><div class="total-val buy-v">€${buyEur.toFixed(2)}</div><div class="total-sub">${toBuy.length} cartas EN/EX</div></div>
+      <div class="total-card"><div class="total-label">Proxy Total</div><div class="total-val proxy-v">${proxyNeed.length + proxyOwned.length}</div><div class="total-sub">${proxyOwned.length} já tens original</div></div>
+      <div class="total-card"><div class="total-label">Da Coleção</div><div class="total-val" style="color:var(--teal)">${fromCol.length}</div></div>
+      <div class="total-card"><div class="total-label">Cortes</div><div class="total-val" style="color:var(--red)">${cutsActive.length}</div></div>
+    </div>
+
+    ${toBuy.length ? `
+    <div class="report-section">
+      <div class="report-sec-head"><span class="report-sec-title buy-t">🛒 Cartas a Comprar EN/EX+</span><span class="mono" style="color:var(--green)">€${buyEur.toFixed(2)}</span></div>
+      <table class="rep-table">
+        <thead><tr><th>Carta</th><th style="text-align:right">Preço</th><th>Cardmarket</th></tr></thead>
+        <tbody>${toBuy.map(a => `<tr><td>${a.name}</td><td class="mono" style="text-align:right">€${a.price.toFixed(2)}</td><td><a href="${cmLink(a.name)}" target="_blank" style="color:var(--teal);font-size:12px">EN/EX ↗</a></td></tr>`).join('')}</tbody>
+      </table>
+    </div>` : ''}
+
+    ${(proxyNeed.length + proxyOwned.length) ? `
+    <div class="report-section">
+      <div class="report-sec-head"><span class="report-sec-title proxy-t">🖨️ Proxies a Imprimir</span></div>
+      <table class="rep-table">
+        <thead><tr><th>Carta</th><th style="text-align:right">Valor real</th><th>Estado</th></tr></thead>
+        <tbody>
+          ${proxyNeed.map(a => `<tr><td>${a.name}</td><td class="mono" style="text-align:right;color:var(--proxy)">€${a.price.toFixed(2)}</td><td><span class="badge-sm b-need">sem cópia — adquirir</span></td></tr>`).join('')}
+          ${proxyOwned.map(a => `<tr><td>${a.name}</td><td class="mono" style="text-align:right;color:var(--proxy)">€${a.price.toFixed(2)}</td><td><span class="badge-sm b-owned">tens ${a.colTotal}× — nova proxy</span></td></tr>`).join('')}
+        </tbody>
+      </table>
+    </div>` : ''}
+
+    ${fromCol.length ? `
+    <div class="report-section">
+      <div class="report-sec-head"><span class="report-sec-title col-t">📦 Da Tua Coleção</span></div>
+      <table class="rep-table">
+        <thead><tr><th>Carta</th><th>Disp.</th><th>Alocada em</th></tr></thead>
+        <tbody>${fromCol.map(a => `<tr><td>${a.name}</td><td><span class="qty-badge ok">${a.available}</span></td><td>${a.allocatedIn.map(d => `<span class="alloc-tag">${d}</span>`).join(' ') || '—'}</td></tr>`).join('')}</tbody>
+      </table>
+    </div>` : ''}
+
+    <div style="padding:1rem 0;display:flex;gap:10px;justify-content:flex-end">
+      <button class="btn" onclick="go('edit')">← Editar</button>
+      <button class="btn btn-gold" onclick="commitUpgrade()">✓ Confirmar e Guardar</button>
+    </div>`;
+}
+
+function commitUpgrade() {
+  if (!wip) return;
+  // Decrement available copies in collection for non-proxy cards used from collection
+  wip.adds.filter(a => !a.removed && !a.isProxy && a.available > 0).forEach(a => {
+    const col = collection.get(a.name);
+    if (col) { col.available = Math.max(0, col.available - 1); }
+  });
+  const entry = {
+    deckId: wip.deckId, deckName: wip.deckName, commander: wip.commander,
+    set: wip.set, url: wip.url,
+    cuts: wip.cuts.filter(c => !c.removed).map(c => c.name),
+    adds: wip.adds.filter(a => !a.removed),
+    committedAt: new Date().toISOString()
+  };
+  shopList.push(entry);
+  saveState(); updateShopBadge();
+  wip = null;
+  document.getElementById('url-in').value = '';
+  toast(`✓ ${entry.deckName} guardado!`, 'ok');
+  go('shop');
+}
+
+// ════════════════════════════════════════════════════════
+// SHOP LIST
+// ════════════════════════════════════════════════════════
+function renderShop() {
+  const body = document.getElementById('shop-body');
+  if (!shopList.length) { body.innerHTML = '<div class="empty-state">Sem upgrades committed ainda.</div>'; return; }
+
+  const agg = buildAgg();
+  const toBuy = [...agg.entries()].filter(([, v]) => !v.isProxy);
+  const toProxy = [...agg.entries()].filter(([, v]) => v.isProxy);
+  const buyEur = toBuy.reduce((s, [, v]) => s + v.price * v.qty, 0);
+  const wantsLines = toBuy.map(([n, v]) => v.qty > 1 ? `${v.qty} ${n}` : `1 ${n}`).join('\n');
+
+  body.innerHTML = `
+    <div class="total-bar">
+      <div class="total-card"><div class="total-label">A Comprar</div><div class="total-val buy-v">€${buyEur.toFixed(2)}</div><div class="total-sub">${toBuy.length} únicas</div></div>
+      <div class="total-card"><div class="total-label">Proxies</div><div class="total-val proxy-v">${toProxy.length}</div></div>
+      <div class="total-card"><div class="total-label">Decks</div><div class="total-val">${shopList.length}</div></div>
+    </div>
+    <div style="font-size:11px;color:var(--fog);margin-bottom:6px;font-weight:700;text-transform:uppercase;letter-spacing:.08em">Wants List Cardmarket</div>
+    <div class="wants-box">${wantsLines}</div>
+    <div class="report-section" style="margin-bottom:1rem">
+      <div class="report-sec-head"><span class="report-sec-title buy-t">🛒 Comprar (${toBuy.length} únicas)</span></div>
+      <table class="rep-table">
+        <thead><tr><th>Carta</th><th style="text-align:center">Qtd</th><th style="text-align:right">Unit.</th><th style="text-align:right">Total</th><th>Decks</th><th>Link</th></tr></thead>
+        <tbody>${toBuy.map(([n, v]) => `<tr>
+          <td>${n}</td>
+          <td style="text-align:center"><span class="qty-badge ${v.qty > 1 ? 'need' : 'ok'}">${v.qty}</span></td>
+          <td class="mono" style="text-align:right">€${v.price.toFixed(2)}</td>
+          <td class="mono" style="text-align:right">€${(v.price * v.qty).toFixed(2)}</td>
+          <td>${v.decks.map(d => `<span class="alloc-tag">${d}</span>`).join(' ')}</td>
+          <td><a href="${cmLink(n)}" target="_blank" style="color:var(--teal);font-size:12px">↗</a></td>
+        </tr>`).join('')}</tbody>
+      </table>
+    </div>
+    ${toProxy.length ? `
+    <div class="report-section" style="margin-bottom:1rem">
+      <div class="report-sec-head"><span class="report-sec-title proxy-t">🖨️ Proxies (${toProxy.length})</span></div>
+      <table class="rep-table">
+        <thead><tr><th>Carta</th><th style="text-align:right">Valor real</th><th>Tens</th><th>Decks</th></tr></thead>
+        <tbody>${toProxy.map(([n, v]) => `<tr>
+          <td>${n}</td>
+          <td class="mono" style="text-align:right;color:var(--proxy)">€${v.price.toFixed(2)}</td>
+          <td>${v.colTotal > 0 ? `<span class="qty-badge ok">${v.colTotal}×</span>` : '<span class="qty-badge need">—</span>'}</td>
+          <td>${v.decks.map(d => `<span class="alloc-tag">${d}</span>`).join(' ')}</td>
+        </tr>`).join('')}</tbody>
+      </table>
+    </div>` : ''}
+    <div style="font-size:11px;color:var(--fog);margin:.5rem 0 .75rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em">Upgrades Committed</div>
+    ${shopList.map(deck => `
+      <div style="background:var(--ink2);border:1px solid var(--line);border-radius:10px;padding:.75rem 1rem;margin-bottom:8px;display:flex;align-items:center;gap:10px">
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:600">${deck.deckName}</div>
+          <div style="font-size:11px;color:var(--fog)">${deck.commander || ''} ${deck.set ? '· ' + deck.set : ''} · ${new Date(deck.committedAt).toLocaleDateString('pt-PT')}</div>
+        </div>
+        <span class="tag-deck">${deck.adds.filter(a => !a.isProxy).length} compras</span>
+        <span class="tag-deck" style="color:var(--proxy)">${deck.adds.filter(a => a.isProxy).length} proxy</span>
+        <button class="btn btn-sm btn-red" onclick="removeDeck('${deck.deckId}')">Remover</button>
+      </div>`).join('')}`;
+}
+
+function buildAgg() {
+  const agg = new Map();
+  for (const deck of shopList) {
+    for (const add of deck.adds) {
+      if (!agg.has(add.name)) agg.set(add.name, { price: add.price, isProxy: add.isProxy, decks: [], qty: 0, colTotal: add.colTotal || 0 });
+      agg.get(add.name).decks.push(deck.deckName);
+      agg.get(add.name).qty++;
+    }
+  }
+  return agg;
+}
+
+function removeDeck(id) {
+  if (!confirm('Remover este deck?')) return;
+  shopList = shopList.filter(d => d.deckId !== id);
+  saveState(); updateShopBadge(); renderShop();
+  toast('Removido.', 'warn');
+}
+
+function updateShopBadge() {
+  const n = shopList.reduce((s, d) => s + d.adds.filter(a => !a.isProxy).length, 0);
+  const el = document.getElementById('shop-badge');
+  el.textContent = n || '0';
+  el.className = 'badge' + (n ? ' new' : '');
+}
+
+// ════════════════════════════════════════════════════════
+// REPORT
+// ════════════════════════════════════════════════════════
+function renderReport() {
+  const body = document.getElementById('report-body');
+  if (!shopList.length) { body.innerHTML = '<div class="empty-state">Sem upgrades ainda.</div>'; return; }
+  const agg = buildAgg();
+  const toBuy = [...agg.entries()].filter(([, v]) => !v.isProxy).sort((a, b) => b[1].price - a[1].price);
+  const toProxy = [...agg.entries()].filter(([, v]) => v.isProxy).sort((a, b) => b[1].price - a[1].price);
+  const buyEur = toBuy.reduce((s, [, v]) => s + v.price * v.qty, 0);
+
+  body.innerHTML = `
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:1rem">
+      <div class="total-card"><div class="total-label">Total Compras</div><div class="total-val buy-v">€${buyEur.toFixed(2)}</div><div class="total-sub">${toBuy.length} únicas · ${toBuy.reduce((s,[,v])=>s+v.qty,0)} cópias</div></div>
+      <div class="total-card"><div class="total-label">Proxies</div><div class="total-val proxy-v">${toProxy.length}</div><div class="total-sub">a imprimir</div></div>
+      <div class="total-card"><div class="total-label">Decks</div><div class="total-val">${shopList.length}</div></div>
+    </div>
+    <div class="report-section">
+      <div class="report-sec-head"><span class="report-sec-title buy-t">🛒 Lista de Compras — EN / EX+</span><span class="mono" style="color:var(--green)">€${buyEur.toFixed(2)}</span></div>
+      <table class="rep-table">
+        <thead><tr><th>Carta</th><th style="text-align:center">Qtd</th><th style="text-align:right">Unit.</th><th style="text-align:right">Total</th><th>Coleção</th><th>Decks</th><th>Link</th></tr></thead>
+        <tbody>${toBuy.map(([n, v]) => {
+          const col = collection.get(n) || { total: 0, available: 0 };
+          return `<tr>
+            <td style="font-weight:500">${n}</td>
+            <td style="text-align:center"><span class="qty-badge ${v.qty>1?'need':'ok'}">${v.qty}</span></td>
+            <td class="mono" style="text-align:right">€${v.price.toFixed(2)}</td>
+            <td class="mono" style="text-align:right">€${(v.price*v.qty).toFixed(2)}</td>
+            <td>${col.total ? `<span class="qty-badge ok">${col.total}</span>` : '—'}</td>
+            <td>${v.decks.map(d=>`<span class="alloc-tag">${d}</span>`).join(' ')}</td>
+            <td><a href="${cmLink(n)}" target="_blank" style="color:var(--teal);font-size:12px">↗</a></td>
+          </tr>`;
+        }).join('')}</tbody>
+      </table>
+    </div>
+    ${toProxy.length ? `
+    <div class="report-section">
+      <div class="report-sec-head"><span class="report-sec-title proxy-t">🖨️ Proxies a Imprimir</span></div>
+      <table class="rep-table">
+        <thead><tr><th>Carta</th><th style="text-align:right">Valor real</th><th>Coleção</th><th>Decks</th></tr></thead>
+        <tbody>${toProxy.map(([n, v]) => {
+          const col = collection.get(n) || { total: 0 };
+          return `<tr>
+            <td>${n}</td>
+            <td class="mono" style="text-align:right;color:var(--proxy)">€${v.price.toFixed(2)}</td>
+            <td>${col.total ? `<span class="qty-badge ok">${col.total}× — nova proxy</span>` : `<span class="qty-badge need">sem cópia</span>`}</td>
+            <td>${v.decks.map(d=>`<span class="alloc-tag">${d}</span>`).join(' ')}</td>
+          </tr>`;
+        }).join('')}</tbody>
+      </table>
+    </div>` : ''}`;
+}
+
+// ════════════════════════════════════════════════════════
+// PROXIES PAGE
+// ════════════════════════════════════════════════════════
+function renderProxies() {
+  const body = document.getElementById('proxy-body');
+  const entries = [...proxyList.entries()];
+
+  body.innerHTML = `
+    <div style="font-size:13px;color:var(--fog);margin-bottom:1rem;line-height:1.7">
+      Esta é a <strong style="color:var(--white)">verdade absoluta</strong> de proxies. O sistema consulta esta lista primeiro para cada carta.<br>
+      Cartas aqui listadas são sempre proxy — independentemente do preço ou de teres cópias na coleção.<br>
+      <span style="color:var(--proxy)">Auto</span> = adicionada automaticamente por preço > €${PROXY_EUR} &nbsp;·&nbsp; <span style="color:var(--teal)">Manual</span> = adicionada por ti
+    </div>
+    <div class="proxy-toolbar">
+      <input type="text" id="proxy-search" placeholder="Pesquisar..." oninput="filterProxies()">
+      <span style="font-size:12px;color:var(--fog)">${entries.length} cartas</span>
+    </div>
+    ${!entries.length ? '<div class="empty-state">Lista vazia. As proxies aparecerão aqui ao fazeres upgrades.</div>' : ''}
+    <div style="display:flex;flex-direction:column;gap:4px" id="proxy-list">
+      ${entries.map(([name, data]) => proxyRow(name, data)).join('')}
+    </div>`;
+}
+
+function proxyRow(name, data) {
+  const col = collection.get(name) || { total: 0 };
+  return `<div class="proxy-card-row" data-name="${name.toLowerCase()}">
+    <span class="proxy-source ${data.source === 'auto' ? 'src-auto' : 'src-manual'}">${data.source === 'auto' ? 'AUTO' : 'MANUAL'}</span>
+    <span style="flex:1;font-size:13px">${name}</span>
+    <span class="mono" style="font-size:12px;color:var(--proxy)">€${(data.price||0).toFixed(2)}</span>
+    ${col.total ? `<span class="badge-sm b-owned">tens ${col.total}×</span>` : `<span class="badge-sm b-need">sem cópia</span>`}
+    <button class="btn btn-xs btn-red" onclick="removeProxy('${name.replace(/'/g,"\\'")}')">Remover</button>
+  </div>`;
+}
+
+function filterProxies() {
+  const q = document.getElementById('proxy-search').value.toLowerCase();
+  document.querySelectorAll('.proxy-card-row').forEach(row => {
+    row.style.display = row.dataset.name.includes(q) ? '' : 'none';
+  });
+}
+
+function removeProxy(name) {
+  proxyList.delete(name);
+  saveState(); updateProxyBadge(); renderProxies();
+  toast(`${name} removida dos proxies`, 'warn');
+}
+
+function addProxyManual() {
+  const name = prompt('Nome da carta a adicionar como proxy:');
+  if (!name?.trim()) return;
+  const ps = prompt(`Valor de mercado aproximado (€) para ${name}:`, '0');
+  const price = parseFloat(ps) || 0;
+  proxyList.set(name.trim(), { source: 'manual', price });
+  saveState(); updateProxyBadge(); renderProxies();
+  toast(`${name} adicionada à lista de proxies!`, 'ok');
+}
+
+function exportProxiesCSV() {
+  const rows = [['Carta', 'Fonte', 'Preço (€)', 'Tens na Coleção']];
+  for (const [name, data] of proxyList) {
+    const col = collection.get(name) || { total: 0 };
+    rows.push([name, data.source, (data.price||0).toFixed(2), col.total || '0']);
+  }
+  const csv = rows.map(r => r.map(c => `"${c}"`).join(',')).join('\n');
+  const a = document.createElement('a'); a.href = 'data:text/csv;charset=utf-8,\uFEFF' + encodeURIComponent(csv); a.download = 'proxies.csv'; a.click();
+}
+
+function updateProxyBadge() {
+  const el = document.getElementById('proxy-badge');
+  el.textContent = proxyList.size || '0';
+  el.className = 'badge' + (proxyList.size ? ' proxy-b' : '');
+}
+
+// ════════════════════════════════════════════════════════
+// COLLECTION
+// ════════════════════════════════════════════════════════
+function renderCollection() {
+  const body = document.getElementById('col-body');
+  const clearBtn = document.getElementById('clear-col-btn');
+  if (!collection.size) {
+    clearBtn.style.display = 'none';
+    body.innerHTML = `
+      <div class="upload-zone" onclick="document.getElementById('col-file').click()" id="col-drop">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        <div style="font-size:15px;font-weight:600;margin-bottom:6px">Importar CSV do Manabox / Deckbox</div>
+        <div style="font-size:12px">Clica ou arrasta aqui</div>
+      </div>
+      <input type="file" id="col-file" accept=".csv" style="display:none" onchange="loadCollectionCSV(event)">`;
+    setupColDrop(); return;
+  }
+  clearBtn.style.display = '';
+  body.innerHTML = `
+    <div class="total-bar" style="margin-bottom:1rem">
+      <div class="total-card"><div class="total-label">Cartas</div><div class="total-val" style="color:var(--teal)">${collection.size}</div></div>
+      <div class="total-card"><div class="total-label">Usadas em Decks</div><div class="total-val">${[...collection.values()].filter(c=>c.available<c.total).length}</div></div>
+    </div>
+    <label class="btn btn-sm btn-teal" style="cursor:pointer;margin-bottom:1.25rem">
+      🔄 Reimportar CSV<input type="file" accept=".csv" style="display:none" onchange="loadCollectionCSV(event)">
+    </label>
+    <div style="font-size:11px;color:var(--fog);margin-bottom:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em">Alocações actuais</div>
+    <div style="display:flex;flex-direction:column;gap:4px">
+      ${[...collection.entries()].filter(([,c])=>c.available<c.total).map(([name,c])=>`
+        <div class="proxy-card-row">
+          <span style="flex:1;font-size:13px">${name}</span>
+          <span class="qty-badge ok">${c.total} total</span>
+          <span class="qty-badge ${c.available===0?'need':'ok'}">${c.available} livre</span>
+          ${shopList.filter(d=>d.adds.find(a=>a.name===name)).map(d=>`<span class="alloc-tag">${d.deckName}</span>`).join('')}
+        </div>`).join('')}
+    </div>`;
+}
+
+function loadCollectionCSV(e) {
+  const file = e.target.files[0]; if (!file) return;
+  const r = new FileReader();
+  r.onload = async ev => {
+    const lines = ev.target.result.split('\n').filter(l => l.trim());
+    if (lines.length < 2) { toast('CSV vazio', 'warn'); return; }
+    const hdr = lines[0].split(',').map(h => h.replace(/"/g, '').trim().toLowerCase());
+    const ni = hdr.findIndex(h => h === 'name' || h === 'card name' || h === 'cardname' || h.includes('card name'));
+    const qi = hdr.findIndex(h => h === 'quantity' || h === 'qty' || h === 'count' || h === 'amount');
+    if (ni < 0) { toast('Coluna de nome não encontrada', 'err'); return; }
+
+    const rawCards = new Map();
+    lines.slice(1).forEach(l => {
+      const cols = (l.match(/(".*?"|[^,]+)/g) || []);
+      const name = (cols[ni] || '').replace(/"/g, '').trim();
+      const qty = qi >= 0 ? parseInt((cols[qi] || '1').replace(/"/g, '')) || 1 : 1;
+      if (name) rawCards.set(name, (rawCards.get(name) || 0) + qty);
+    });
+
+    toast(`A verificar preços para proxies...`, 'warn');
+
+    // Ask Claude to identify expensive cards from collection
+    try {
+      const cardList = [...rawCards.keys()].slice(0, 200); // limit
+      const prompt = `Given this list of Magic: The Gathering cards, identify which ones have an approximate Cardmarket price above €${PROXY_EUR} for English Excellent condition.
+      
+Cards: ${cardList.join(', ')}
+
+Respond ONLY with JSON array of objects for cards above €${PROXY_EUR}:
+[{"name":"Card Name","price":12.50}]
+Only include cards you're confident cost more than €${PROXY_EUR}. If uncertain, omit. No markdown.`;
+
+      const resp = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-api-key': ANTHROPIC_KEY, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+        body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 800, messages: [{ role: 'user', content: prompt }] })
+      });
+      const data = await resp.json();
+      const text = data.content.map(b => b.text || '').join('');
+      const expensive = JSON.parse(text.replace(/```json|```/g, '').trim());
+
+      // Filter out cards already in proxy list
+      const toConfirm = expensive.filter(c => !proxyList.has(c.name));
+
+      collection.clear();
+      rawCards.forEach((qty, name) => collection.set(name, { total: qty, available: qty }));
+      saveState();
+      updateColPill();
+      renderCollection();
+
+      if (toConfirm.length) {
+        showProxyConfirmFromCollection(toConfirm);
+      } else {
+        toast(`✓ ${rawCards.size} cartas carregadas!`, 'ok');
+      }
+    } catch {
+      // Fallback without price check
+      collection.clear();
+      rawCards.forEach((qty, name) => collection.set(name, { total: qty, available: qty }));
+      saveState(); updateColPill(); renderCollection();
+      toast(`✓ ${rawCards.size} cartas carregadas!`, 'ok');
+    }
+  };
+  r.readAsText(file);
+}
+
+function showProxyConfirmFromCollection(cards) {
+  const checkboxes = cards.map((c, i) =>
+    `<div class="modal-card-item">
+      <input type="checkbox" id="cconf-${i}" checked>
+      <span style="flex:1">${c.name}</span>
+      <span class="mono" style="color:var(--proxy);font-size:12px">~€${c.price.toFixed(2)}</span>
+    </div>`).join('');
+
+  document.getElementById('modal-content').innerHTML = `
+    <h3>🖨️ Cartas da coleção a adicionar como Proxies</h3>
+    <p>Estas cartas da tua coleção têm valor estimado > €${PROXY_EUR}. Queres adicioná-las à lista de proxies?</p>
+    <div class="modal-cards">${checkboxes}</div>
+    <div class="modal-actions">
+      <button class="btn btn-sm" onclick="closeModal()">Saltar</button>
+      <button class="btn btn-sm btn-proxy" onclick="confirmColProxies(${JSON.stringify(cards)})">Confirmar selecionadas</button>
+    </div>`;
+  document.getElementById('modal-overlay').style.display = 'flex';
+}
+
+function confirmColProxies(cards) {
+  let added = 0;
+  cards.forEach((c, i) => {
+    const cb = document.getElementById('cconf-' + i);
+    if (cb && cb.checked) { proxyList.set(c.name, { source: 'auto', price: c.price }); added++; }
+  });
+  saveState(); updateProxyBadge(); closeModal();
+  toast(`✓ ${collection.size} cartas carregadas! ${added} adicionadas à lista de proxies.`, 'ok');
+}
+
+function setupColDrop() {
+  const dz = document.getElementById('col-drop'); if (!dz) return;
+  dz.addEventListener('dragover', e => { e.preventDefault(); dz.style.borderColor = 'var(--teal)'; });
+  dz.addEventListener('dragleave', () => dz.style.borderColor = '');
+  dz.addEventListener('drop', e => { e.preventDefault(); dz.style.borderColor = ''; loadCollectionCSV({ target: { files: e.dataTransfer.files } }); });
+}
+
+function clearCollection() {
+  if (!confirm('Limpar coleção?')) return;
+  collection.clear(); saveState(); renderCollection();
+  updateColPill();
+}
+
+function updateColPill() {
+  const pill = document.getElementById('col-pill');
+  if (collection.size) {
+    pill.className = 'col-pill loaded';
+    pill.textContent = `📦 ${collection.size} cartas`;
+  } else {
+    pill.className = 'col-pill';
+    pill.textContent = '📦 Sem coleção importada';
+  }
+}
+
+// ════════════════════════════════════════════════════════
+// WANTS / EXPORT
+// ════════════════════════════════════════════════════════
+function cmLink(name) {
+  return `https://www.cardmarket.com/en/Magic/Products/Search?searchString=${encodeURIComponent(name)}&sellerCountry=1%7C3%7C5&minCondition=3&idLanguage=1`;
+}
+
+function getWantsText() {
+  const agg = new Map();
+  for (const deck of shopList) {
+    for (const add of deck.adds) {
+      if (add.isProxy) continue;
+      agg.set(add.name, (agg.get(add.name) || 0) + 1);
+    }
+  }
+  return [...agg.entries()].map(([n, q]) => q > 1 ? `${q} ${n}` : `1 ${n}`).join('\n');
+}
+
+function copyWants() {
+  const t = getWantsText();
+  if (!t) { toast('Sem cartas a copiar', 'warn'); return; }
+  navigator.clipboard.writeText(t).then(() => toast('Copiado! Cola no Cardmarket.', 'ok')).catch(() => {
+    const a = document.createElement('textarea'); a.value = t; document.body.appendChild(a); a.select(); document.execCommand('copy'); document.body.removeChild(a); toast('Copiado!', 'ok');
+  });
+}
+
+function downloadWants() {
+  const t = getWantsText();
+  if (!t) { toast('Sem cartas', 'warn'); return; }
+  const a = document.createElement('a'); a.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(t); a.download = 'wantslist.txt'; a.click();
+}
+
+function exportJSON() {
+  const data = { shopList, proxyList: [...proxyList], collection: [...collection], threshold: PROXY_EUR, exportedAt: new Date().toISOString() };
+  const a = document.createElement('a'); a.href = 'data:application/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(data, null, 2)); a.download = 'mtg_upgrade_studio.json'; a.click();
+  toast('JSON exportado!', 'ok');
+}
+
+function importJSON(e) {
+  const file = e.target.files[0]; if (!file) return;
+  const r = new FileReader();
+  r.onload = ev => {
+    try {
+      const data = JSON.parse(ev.target.result);
+      if (data.shopList) shopList = data.shopList;
+      if (data.proxyList) proxyList = new Map(data.proxyList);
+      if (data.collection) collection = new Map(data.collection);
+      if (data.threshold) { PROXY_EUR = data.threshold; document.getElementById('threshold-input').value = PROXY_EUR; }
+      saveState(); updateShopBadge(); updateProxyBadge(); updateColPill();
+      renderShop();
+      toast(`✓ Importado: ${shopList.length} decks, ${proxyList.size} proxies, ${collection.size} cartas`, 'ok');
+    } catch { toast('JSON inválido', 'err'); }
+  };
+  r.readAsText(file);
+}
+
+
+// ════════════════════════════════════════════════════════
+// SUPABASE SYNC
+// ════════════════════════════════════════════════════════
+let SB_URL = localStorage.getItem('sb_url') || '';
+let SB_KEY = localStorage.getItem('sb_key') || '';
+let ANTHROPIC_KEY = localStorage.getItem('anthropic_key') || '';
+
+let syncTimeout = null;
+let syncStatus = 'idle'; // idle | syncing | ok | error
+
+async function sbFetch(path, options = {}) {
+  const resp = await fetch(SB_URL + path, {
+    ...options,
+    headers: {
+      'apikey': SB_KEY,
+      'Authorization': 'Bearer ' + SB_KEY,
+      'Content-Type': 'application/json',
+      'Prefer': 'return=representation',
+      ...(options.headers || {})
+    }
+  });
+  if (!resp.ok) {
+    const err = await resp.text();
+    throw new Error('Supabase ' + resp.status + ': ' + err);
+  }
+  return resp.json();
+}
+
+async function syncToCloud() {
+  setSyncStatus('syncing');
+  try {
+    const payload = {
+      id: 'singleton',
+      shop_list: shopList,
+      proxy_list: [...proxyList],
+      collection: [...collection],
+      threshold: PROXY_EUR,
+      updated_at: new Date().toISOString()
+    };
+    await sbFetch('/rest/v1/upgrade_data?id=eq.singleton', {
+      method: 'PATCH',
+      body: JSON.stringify(payload)
+    });
+    setSyncStatus('ok');
+  } catch(e) {
+    console.error('Sync error:', e);
+    setSyncStatus('error');
+  }
+}
+
+async function loadFromCloud() {
+  setSyncStatus('syncing');
+  try {
+    const data = await sbFetch('/rest/v1/upgrade_data?id=eq.singleton&select=*');
+    if (data && data.length > 0) {
+      const d = data[0];
+      if (d.shop_list)  shopList   = d.shop_list;
+      if (d.proxy_list) proxyList  = new Map(d.proxy_list);
+      if (d.collection) collection = new Map(d.collection);
+      if (d.threshold)  { PROXY_EUR = d.threshold; document.getElementById('threshold-input').value = PROXY_EUR; }
+      saveState(); // also persist locally as cache
+      updateShopBadge(); updateProxyBadge(); updateColPill();
+      setSyncStatus('ok');
+      return true;
+    }
+    setSyncStatus('ok');
+    return false;
+  } catch(e) {
+    console.error('Load error:', e);
+    setSyncStatus('error');
+    return false;
+  }
+}
+
+// Debounced save: save locally immediately, sync to cloud after 1.5s idle
+function saveState() {
+  try {
+    localStorage.setItem('mtg_threshold', PROXY_EUR);
+    localStorage.setItem('mtg_proxies',  JSON.stringify([...proxyList]));
+    localStorage.setItem('mtg_col',      JSON.stringify([...collection]));
+    localStorage.setItem('mtg_shop',     JSON.stringify(shopList));
+  } catch(e) {}
+  // Debounce cloud sync
+  clearTimeout(syncTimeout);
+  syncTimeout = setTimeout(syncToCloud, 1500);
+}
+
+function setSyncStatus(s) {
+  syncStatus = s;
+  const el = document.getElementById('sync-indicator');
+  if (!el) return;
+  const map = {
+    idle:    { icon: '☁️',  color: 'var(--fog)',   text: 'Cloud' },
+    syncing: { icon: '🔄',  color: 'var(--mist)',  text: 'A sincronizar...' },
+    ok:      { icon: '✓',   color: 'var(--green)', text: 'Sincronizado' },
+    error:   { icon: '⚠️',  color: 'var(--red)',   text: 'Erro sync' }
+  };
+  const m = map[s] || map.idle;
+  el.style.color = m.color;
+  el.innerHTML = `<span>${m.icon}</span><span>${m.text}</span>`;
+}
+
+
+// ════════════════════════════════════════════════════════
+// SETUP & CONFIG
+// ════════════════════════════════════════════════════════
+function saveSupabaseConfig(fromSettings = false) {
+  const url = (document.getElementById(fromSettings ? 'cfg-url' : 'setup-url').value || '').trim();
+  const key = (document.getElementById(fromSettings ? 'cfg-key' : 'setup-key').value || '').trim();
+  if (!url || !key) { toast('Preenche URL e Key', 'warn'); return; }
+  if (!url.includes('supabase.co')) { toast('URL inválido — deve ser *.supabase.co', 'warn'); return; }
+  const ak = (document.getElementById(fromSettings ? 'cfg-anthropic' : 'setup-anthropic')?.value || '').trim();
+  if (ak) { ANTHROPIC_KEY = ak; localStorage.setItem('anthropic_key', ak); }
+  SB_URL = url; SB_KEY = key;
+  localStorage.setItem('sb_url', url);
+  localStorage.setItem('sb_key', key);
+  if (fromSettings) {
+    const el = document.getElementById('cfg-status');
+    el.textContent = 'A testar ligação...'; el.style.color = 'var(--mist)';
+    loadFromCloud().then(ok => {
+      el.textContent = ok ? '✓ Ligado e sincronizado!' : '✓ Ligado (base de dados vazia)';
+      el.style.color = 'var(--green)';
+    }).catch(() => {
+      el.textContent = '⚠️ Erro — verifica as credenciais';
+      el.style.color = 'var(--red)';
+    });
+  } else {
+    initApp();
+    go('import');
+    toast('✓ Ligado ao Supabase!', 'ok');
+  }
+}
+
+function saveAnthropicKey() {
+  const key = (document.getElementById('cfg-anthropic').value || '').trim();
+  if (!key) { toast('Insere a API key', 'warn'); return; }
+  if (!key.startsWith('sk-ant-')) { toast('Key inválida — deve começar com sk-ant-', 'warn'); return; }
+  ANTHROPIC_KEY = key;
+  localStorage.setItem('anthropic_key', key);
+  const el = document.getElementById('anthropic-status');
+  el.textContent = '✓ API key guardada!'; el.style.color = 'var(--green)';
+  toast('✓ Anthropic API key guardada!', 'ok');
+}
+
+function clearAnthropicKey() {
+  if (!confirm('Remover API key?')) return;
+  ANTHROPIC_KEY = '';
+  localStorage.removeItem('anthropic_key');
+  document.getElementById('cfg-anthropic').value = '';
+  const el = document.getElementById('anthropic-status');
+  el.textContent = 'Key removida.'; el.style.color = 'var(--fog)';
+  toast('API key removida.', 'warn');
+}
+
+function clearSupabaseConfig() {
+  if (!confirm('Desligar do Supabase? Os dados locais são mantidos.')) return;
+  SB_URL = ''; SB_KEY = '';
+  localStorage.removeItem('sb_url');
+  localStorage.removeItem('sb_key');
+  toast('Desligado do Supabase.', 'warn');
+  document.getElementById('cfg-status').textContent = 'Desligado.';
+  document.getElementById('cfg-status').style.color = 'var(--fog)';
+}
+
+function renderSettings() {
+  const u = document.getElementById('cfg-url');
+  const k = document.getElementById('cfg-key');
+  const a = document.getElementById('cfg-anthropic');
+  if (u) u.value = SB_URL || '';
+  if (k) k.value = SB_KEY || '';
+  if (a) a.value = ANTHROPIC_KEY || '';
+  const el = document.getElementById('anthropic-status');
+  if (el) {
+    if (ANTHROPIC_KEY) { el.textContent = '✓ API key configurada'; el.style.color = 'var(--green)'; }
+    else { el.textContent = '⚠️ Sem API key — análise EDHREC não disponível'; el.style.color = 'var(--proxy)'; }
+  }
+}
+
+function downloadSetupGuide() {
+  const sql = `-- MTG Upgrade Studio — Supabase Setup SQL
+-- Cola este script no SQL Editor do teu projecto Supabase
+
+create table upgrade_data (
+  id text primary key default 'singleton',
+  shop_list jsonb default '[]',
+  proxy_list jsonb default '[]',
+  collection jsonb default '[]',
+  threshold numeric default 5,
+  updated_at timestamptz default now()
+);
+
+insert into upgrade_data (id) values ('singleton')
+on conflict do nothing;
+
+alter table upgrade_data enable row level security;
+create policy "Allow all" on upgrade_data for all using (true);`;
+
+  const guide = `MTG UPGRADE STUDIO — GUIA DE SETUP
+=====================================
+
+1. Vai a https://supabase.com e cria uma conta gratuita (podes usar Google)
+
+2. Clica "New Project"
+   - Nome: mtg-upgrade-studio (ou o que quiseres)
+   - Região: West EU (Ireland) — mais rápido para Portugal
+   - Password: define uma (guarda-a, mas não precisas para a app)
+
+3. Aguarda ~2 minutos enquanto o projecto inicia
+
+4. No menu lateral, vai a "SQL Editor"
+   - Cola o seguinte SQL e clica "Run":
+
+${sql}
+
+5. Vai a "Project Settings" → "API"
+   - Copia o "Project URL" (ex: https://xxxxxxxxxxx.supabase.co)
+   - Copia o "anon public" key (começa com eyJ...)
+
+6. Abre o ficheiro mtg_upgrade_studio.html no browser
+   - Cola o Project URL e a Anon Key no écran inicial
+   - Clica "Ligar e começar"
+
+Pronto! Os teus dados ficam guardados na cloud e sincronizam
+automaticamente entre todos os dispositivos onde abrires o ficheiro.
+
+NOTA: Cada pessoa deve ter o seu próprio projecto Supabase.
+Não partilhes as tuas credenciais com outros — cria o teu próprio projecto,
+é gratuito e demora 5 minutos.
+`;
+
+  const a = document.createElement('a');
+  a.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(guide);
+  a.download = 'mtg_upgrade_studio_setup.txt';
+  a.click();
+  toast('Guia descarregado!', 'ok');
+}
+
+// ════════════════════════════════════════════════════════
+// TOAST
+// ════════════════════════════════════════════════════════
+function toast(msg, type = 'ok') {
+  const t = document.getElementById('toast'); t.textContent = msg; t.className = 'toast show ' + (type || '');
+  clearTimeout(t._t); t._t = setTimeout(() => t.className = 'toast', 3500);
+}
+
+// ════════════════════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════════════════════
+function initApp() {
+  loadState();
+  updateShopBadge();
+  updateProxyBadge();
+  updateColPill();
+  if (SB_URL && SB_KEY) {
+    loadFromCloud().then(loaded => {
+      if (loaded) {
+        const active = document.querySelector('.panel.on');
+        if (active) {
+          const id = active.id.replace('panel-', '');
+          if (id === 'shop') renderShop();
+          else if (id === 'report') renderReport();
+          else if (id === 'col') renderCollection();
+          else if (id === 'proxies') renderProxies();
+        }
+      }
+    });
+  }
+}
+
+if (!SB_URL || !SB_KEY) {
+  document.getElementById('panel-import').classList.remove('on');
+  document.getElementById('panel-setup').classList.add('on');
+} else {
+  initApp();
+}
+</script>
+</body>
+</html>
