@@ -620,23 +620,30 @@ function showProxyConfirmModal(cards, onDone) {
     <div class="modal-cards">${checkboxes}</div>
     <div class="modal-actions">
       <button class="btn btn-sm" onclick="closeModal();${onDone ? '(' + onDone.toString() + ')()' : ''}">Saltar</button>
-      <button class="btn btn-sm btn-proxy" onclick="confirmProxies(${JSON.stringify(cards)}, ${onDone ? onDone.toString() : 'null'})">Confirmar selecionadas</button>
+      <button class="btn btn-sm btn-proxy" onclick="confirmProxies()">Confirmar selecionadas</button>
     </div>`;
   document.getElementById('modal-overlay').style.display = 'flex';
 }
 
+let _pendingProxyConfirm = { cards: [], onDone: null };
+
 function confirmProxies(cards, onDone) {
-  cards.forEach((c, i) => {
-    const cb = document.getElementById('pconf-' + i);
-    if (cb && cb.checked) {
-      proxyList.set(c.name, { source: 'auto', price: c.price });
-    }
+  // Called with args when setting up, or without args from button click
+  if (cards !== undefined) {
+    _pendingProxyConfirm = { cards, onDone };
+    return;
+  }
+  // Called from button - use stored data
+  const { cards: c, onDone: cb } = _pendingProxyConfirm;
+  c.forEach((card, i) => {
+    const el = document.getElementById('pconf-' + i);
+    if (el && el.checked) proxyList.set(card.name, { source: 'auto', price: card.price });
   });
   saveState();
   updateProxyBadge();
   closeModal();
-  toast(`Lista de proxies atualizada!`, 'ok');
-  if (typeof onDone === 'function') onDone();
+  toast('Lista de proxies atualizada!', 'ok');
+  if (typeof cb === 'function') cb();
   else go('edit');
 }
 
